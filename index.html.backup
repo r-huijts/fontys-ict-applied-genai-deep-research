@@ -280,7 +280,7 @@
                     .map(file => ({
                         name: file.name,
                         size: file.size,
-                        modified: new Date().toISOString().split('T')[0], // Use current date as GitHub API doesn't provide file modification time
+                        modified: new Date(file.download_url ? 'Unknown' : 'Unknown').toISOString().split('T')[0],
                         download_url: file.download_url
                     }));
 

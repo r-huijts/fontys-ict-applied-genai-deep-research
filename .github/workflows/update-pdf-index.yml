@@ -1,0 +1,129 @@
+name: Update PDF Index
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '*.pdf'
+      - 'index.html'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  update-index:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Scan for PDF files and update index
+      run: |
+        echo "🔄 Scanning for PDF files..."
+        
+        # Count PDF files
+        PDF_COUNT=$(ls -1 *.pdf 2>/dev/null | wc -l | tr -d ' ')
+        echo "Found $PDF_COUNT PDF files"
+        
+        # Calculate total size
+        TOTAL_SIZE=$(node -e "
+        const fs = require('fs');
+        const files = fs.readdirSync('.').filter(f => f.endsWith('.pdf'));
+        const totalBytes = files.reduce((sum, file) => sum + fs.statSync(file).size, 0);
+        const formatSize = (bytes) => {
+          if (bytes === 0) return '0 B';
+          const k = 1024;
+          const sizes = ['B', 'KB', 'MB', 'GB'];
+          const i = Math.floor(Math.log(bytes) / Math.log(k));
+          return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        };
+        console.log(formatSize(totalBytes));
+        ")
+        
+        echo "Total size: $TOTAL_SIZE"
+        
+        # Generate updated file list
+        node -e "
+        const fs = require('fs');
+        const path = require('path');
+        
+        function getFileList() {
+          const files = fs.readdirSync('.');
+          return files
+            .filter(file => file.endsWith('.pdf'))
+            .map(file => {
+              const stats = fs.statSync(file);
+              return {
+                name: file,
+                size: stats.size,
+                modified: stats.mtime.toISOString().split('T')[0]
+              };
+            })
+            .sort((a, b) => a.name.localeCompare(b.name));
+        }
+        
+        const files = getFileList();
+        const fileListJs = files.map(file => 
+          \`                { name: '\${file.name}', size: \${file.size}, modified: '\${file.modified}' }\`
+        ).join(',\\n');
+        
+        // Read current index.html
+        let indexContent = fs.readFileSync('index.html', 'utf8');
+        
+        // Update the fallback file list
+        const fallbackRegex = /(\/\/ Fallback function with known files[\\s\\S]*?return \\[)[\\s\\S]*?(\\];[\\s\\S]*?})/;
+        const newFallback = \`\$1\\n\${fileListJs}\\n            \$2\`;
+        
+        if (fallbackRegex.test(indexContent)) {
+          indexContent = indexContent.replace(fallbackRegex, newFallback);
+          
+          // Update stats
+          indexContent = indexContent.replace(
+            /<div class=\"stat-number\" id=\"paper-count\">[0-9]*<\/div>/,
+            \`<div class=\"stat-number\" id=\"paper-count\">\${files.length}</div>\`
+          );
+          
+          const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+          const formatSize = (bytes) => {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+          };
+          
+          indexContent = indexContent.replace(
+            /<div class=\"stat-number\" id=\"total-size\">[^<]*<\/div>/,
+            \`<div class=\"stat-number\" id=\"total-size\">\${formatSize(totalSize)}</div>\`
+          );
+          
+          fs.writeFileSync('index.html', indexContent);
+          console.log('✅ Updated index.html with current PDF files');
+        } else {
+          console.log('⚠️ Could not find fallback function pattern in index.html');
+        }
+        "
+        
+    - name: Check for changes
+      id: verify-changed-files
+      run: |
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "changed=false" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Commit changes
+      if: steps.verify-changed-files.outputs.changed == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add index.html
+        git commit -m "🤖 Auto-update PDF index with current files"
+        git push
