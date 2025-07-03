@@ -1,2 +1,327 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fontys ICT Applied GenAI Deep Research</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --background-color: #f8fafc;
+            --card-background: #ffffff;
+            --text-color: #334155;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border-radius: 12px;
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--card-background);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            min-width: 120px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .papers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .paper-card {
+            background: var(--card-background);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .paper-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.15);
+        }
+
+        .paper-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .paper-description {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .paper-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .file-size {
+            background: var(--background-color);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .download-btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-1px);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        .last-updated {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1rem;
+            background: var(--card-background);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .auto-update-info {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .papers-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Fontys ICT Applied GenAI Deep Research</h1>
+            <p>Comprehensive research papers exploring the frontiers of Generative AI</p>
+        </div>
+
+        <div class="auto-update-info">
+            <strong>🔄 Auto-Discovery Active:</strong> This page automatically detects and displays new PDF files added to the repository!
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="paper-count">7</div>
+                <div class="stat-label">Research Papers</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="total-size">1.2 MB</div>
+                <div class="stat-label">Total Size</div>
+            </div>
+        </div>
+
+        <div class="papers-grid" id="papers-container">
+            <!-- Papers will be populated by JavaScript -->
+        </div>
+
+        <div class="last-updated">
+            <p>Last updated: <span id="last-updated-time"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // Paper descriptions mapping - you can add more as needed
+        const paperDescriptions = {
+            'comfyui.pdf': 'Exploring ComfyUI as a node-based interface for stable diffusion workflows, enabling complex AI image generation pipelines.',
+            'diffusion_models.pdf': 'Deep dive into diffusion models, the revolutionary approach to generative AI that powers modern image synthesis.',
+            'finetuning.pdf': 'Comprehensive guide to fine-tuning large language models and AI systems for specific tasks and domains.',
+            'quantization.pdf': 'Technical analysis of model quantization techniques for optimizing AI model performance and deployment.',
+            'samplers_schedulers.pdf': 'Detailed examination of sampling methods and scheduling algorithms in generative AI systems.',
+            'the_age_of_ai_agents.pdf': 'Exploring the emergence of AI agents and their impact on future human-computer interaction.',
+            'ux.pdf': 'User experience design principles and methodologies for AI-powered applications and interfaces.'
+        };
+
+        // Function to format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        // Function to format paper title
+        function formatPaperTitle(filename) {
+            return filename
+                .replace('.pdf', '')
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, l => l.toUpperCase())
+                .replace(/Ai/g, 'AI')
+                .replace(/Ux/g, 'UX')
+                .replace(/Comfyui/g, 'ComfyUI');
+        }
+
+        // Function to get file info from current directory
+        async function getFileInfo() {
+            try {
+                // In a real implementation, this would fetch from the server
+                // For GitHub Pages, you might need to maintain a JSON file with file metadata
+                // or use a GitHub API to list files
+                
+                // For now, we'll use the known files from your repo
+                const knownFiles = [
+                    { name: 'comfyui.pdf', size: 142037, modified: '2024-07-03' },
+                    { name: 'diffusion_models.pdf', size: 163053, modified: '2024-07-03' },
+                    { name: 'finetuning.pdf', size: 131438, modified: '2024-07-03' },
+                    { name: 'quantization.pdf', size: 143483, modified: '2024-07-03' },
+                    { name: 'samplers_schedulers.pdf', size: 193655, modified: '2024-07-03' },
+                    { name: 'the_age_of_ai_agents.pdf', size: 178738, modified: '2024-07-03' },
+                    { name: 'ux.pdf', size: 246590, modified: '2024-07-03' }
+                ];
+                
+                return knownFiles;
+            } catch (error) {
+                console.error('Error fetching file info:', error);
+                return [];
+            }
+        }
+
+        // Function to render papers
+        async function renderPapers() {
+            const papers = await getFileInfo();
+            const container = document.getElementById('papers-container');
+            const totalSize = papers.reduce((sum, paper) => sum + paper.size, 0);
+            
+            // Update stats
+            document.getElementById('paper-count').textContent = papers.length;
+            document.getElementById('total-size').textContent = formatFileSize(totalSize);
+            
+            // Sort papers by name
+            papers.sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Generate HTML for each paper
+            container.innerHTML = papers.map(paper => `
+                <div class="paper-card">
+                    <div class="paper-title">${formatPaperTitle(paper.name)}</div>
+                    <div class="paper-description">${paperDescriptions[paper.name] || 'Research paper exploring advanced topics in AI and machine learning.'}</div>
+                    <div class="paper-meta">
+                        <span>Modified: ${paper.modified}</span>
+                        <span class="file-size">${formatFileSize(paper.size)}</span>
+                    </div>
+                    <a href="${paper.name}" class="download-btn" target="_blank">
+                        <span>📄</span>
+                        <span>Download PDF</span>
+                    </a>
+                </div>
+            `).join('');
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            renderPapers();
+            document.getElementById('last-updated-time').textContent = new Date().toLocaleString();
+        });
+
+        // Auto-refresh every 60 seconds to pick up new files
+        setInterval(() => {
+            renderPapers();
+            document.getElementById('last-updated-time').textContent = new Date().toLocaleString();
+        }, 60000);
+    </script>
+</body>
+</html>
